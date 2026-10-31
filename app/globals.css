@@ -12,11 +12,21 @@
 
 html,
 body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: -0.012em;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
 }
 
 /* Zero-glitch preloader behavior: hides instantly before first paint on subsequent visits */

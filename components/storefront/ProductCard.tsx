@@ -19,7 +19,7 @@ export function ProductCard({ product, currencySymbol = '₹' }: ProductCardProp
   const primaryImage = product.product_images?.[0];
   const imageUrl = primaryImage?.image_url
     ? getOptimizedCloudinaryUrl(primaryImage.image_url, {
-        width: 800,
+        width: 400,
       })
     : '';
 
@@ -66,6 +66,7 @@ export function ProductCard({ product, currencySymbol = '₹' }: ProductCardProp
               src={imageUrl}
               alt={primaryImage?.alt_text || product.name}
               loading="lazy"
+              decoding="async"
               className="h-full w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
             />
           ) : (

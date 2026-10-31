@@ -29,7 +29,7 @@ export function getOptimizedCloudinaryUrl(
   const width = options?.width || 800;
   const crop = options?.crop || 'limit';
 
-  const transform = `f_auto,q_auto:best,c_limit,w_${width}`;
+  const transform = `f_auto,q_auto:good,c_limit,w_${width}`;
 
   if (urlOrPublicId.startsWith('http://') || urlOrPublicId.startsWith('https://')) {
     if (urlOrPublicId.includes('res.cloudinary.com') && urlOrPublicId.includes('/upload/')) {

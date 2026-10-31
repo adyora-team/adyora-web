@@ -124,9 +124,10 @@ export function ProductDetailClient({
           {activeImage?.image_url ? (
             <img
               src={getOptimizedCloudinaryUrl(activeImage.image_url, {
-                width: 1200,
+                width: 800,
               })}
               alt={activeImage.alt_text || product.name}
+              decoding="async"
               className="h-full w-full object-cover object-top"
             />
           ) : (
