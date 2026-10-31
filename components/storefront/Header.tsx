@@ -86,28 +86,28 @@ export function Header({ settings, navigationItems, categories }: HeaderProps) {
         )}
 
         {/* 2. Main Header Row */}
-        <div className="mx-auto flex h-14 md:h-16 max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="relative mx-auto flex h-14 md:h-16 max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Mobile Left: Hamburger Menu */}
-          <div className="flex items-center lg:hidden">
+          <div className="flex items-center lg:hidden w-9">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="p-1.5 text-white hover:text-[#0066FF]"
+              className="p-1.5 text-white hover:text-[#0066FF] transition-colors"
               aria-label="Open navigation menu"
             >
               <Menu className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Logo (Left on Desktop, Centered on Mobile) */}
+          {/* Logo (Left on Desktop, Perfectly Centered on Mobile) */}
           <Link
             href="/"
-            className="flex items-center justify-center lg:justify-start flex-shrink-0"
+            className="flex items-center justify-center lg:justify-start flex-shrink-0 absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0"
           >
             <img
               src={OFFICIAL_ADYORA_LOGO_URL}
               alt={settings.site_name || 'ADYORA'}
-              className="h-8 sm:h-9 md:h-10 w-auto object-contain"
+              className="h-7 sm:h-8 md:h-10 w-auto object-contain"
             />
           </Link>
 

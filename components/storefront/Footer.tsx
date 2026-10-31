@@ -14,14 +14,14 @@ export function Footer({ footer, categories }: FooterProps) {
   return (
     <footer className="bg-[#080808] text-white border-t border-white/10">
       <div className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-2 lg:grid-cols-5">
           {/* Brand Column */}
-          <div className="lg:col-span-2">
+          <div className="col-span-2 lg:col-span-2">
             <Link href="/" className="inline-block">
               <img
                 src={OFFICIAL_ADYORA_LOGO_URL}
                 alt="ADYORA"
-                className="h-10 w-auto object-contain"
+                className="h-9 sm:h-10 w-auto object-contain"
               />
             </Link>
             {footer.footer_description && (
@@ -149,7 +149,7 @@ export function Footer({ footer, categories }: FooterProps) {
           </div>
 
           {/* Policies Column */}
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <h3 className="text-xs font-extrabold uppercase tracking-[0.16em] text-white">
               Policies & Legal
             </h3>

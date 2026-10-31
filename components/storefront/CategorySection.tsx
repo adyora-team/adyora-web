@@ -41,7 +41,7 @@ export function CategorySection({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2.5 sm:gap-3.5">
+          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2 sm:gap-3.5">
             {categories.map((cat) => {
               const optimizedImg = cat.image_url
                 ? getOptimizedCloudinaryUrl(cat.image_url, {
@@ -71,7 +71,7 @@ export function CategorySection({
                       </div>
                     )}
                   </div>
-                  <h3 className="mt-2.5 text-center text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#080808] group-hover:text-[#0066FF] transition-colors">
+                  <h3 className="mt-2 text-center text-[9px] sm:text-[11px] font-extrabold uppercase tracking-[0.08em] sm:tracking-[0.1em] text-[#080808] group-hover:text-[#0066FF] transition-colors truncate">
                     {cat.name}
                   </h3>
                 </Link>

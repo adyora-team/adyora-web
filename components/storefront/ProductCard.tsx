@@ -121,26 +121,26 @@ export function ProductCard({ product, currencySymbol = '₹' }: ProductCardProp
       </div>
 
       {/* Product Info */}
-      <div className="mt-2.5 flex flex-col gap-1">
+      <div className="mt-2 sm:mt-2.5 flex flex-col gap-0.5 sm:gap-1">
         <Link
           href={`/products/${product.slug}`}
-          className="truncate text-xs font-bold uppercase tracking-wide text-[#080808] hover:text-[#0066FF] transition-colors"
+          className="truncate text-[11px] sm:text-xs font-bold uppercase tracking-wide text-[#080808] hover:text-[#0066FF] transition-colors"
         >
           {product.name}
         </Link>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-extrabold text-[#080808]">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          <span className="text-[11px] sm:text-xs font-extrabold text-[#080808]">
             {currencySymbol}
             {Number(product.selling_price).toLocaleString('en-IN')}
           </span>
           {hasDiscount && (
             <>
-              <span className="text-[11px] text-neutral-400 line-through">
+              <span className="text-[10px] sm:text-[11px] text-neutral-400 line-through">
                 {currencySymbol}
                 {Number(product.original_price).toLocaleString('en-IN')}
               </span>
-              <span className="text-[10px] font-bold text-[#0066FF]">
+              <span className="text-[9px] sm:text-[10px] font-bold text-[#0066FF]">
                 ({discountPercentage}% OFF)
               </span>
             </>
@@ -149,13 +149,13 @@ export function ProductCard({ product, currencySymbol = '₹' }: ProductCardProp
 
         {/* Available Colour Swatches */}
         {Array.isArray(product.colours) && product.colours.length > 0 && (
-          <div className="mt-1 flex items-center gap-1.5">
+          <div className="mt-0.5 sm:mt-1 flex items-center gap-1 sm:gap-1.5">
             {product.colours.slice(0, 5).map((col, idx) => (
               <span
                 key={idx}
                 title={col.name}
                 style={{ backgroundColor: col.hex || '#080808' }}
-                className="h-3 w-3 rounded-full border border-neutral-300"
+                className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border border-neutral-300"
               />
             ))}
           </div>

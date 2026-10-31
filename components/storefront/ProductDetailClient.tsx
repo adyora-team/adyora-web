@@ -354,6 +354,25 @@ export function ProductDetailClient({
           </div>
         </div>
       </div>
+
+      {/* Mobile Sticky Add-to-Bag Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#E5E5E5] p-3 px-4 flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+        <div className="flex flex-col">
+          <span className="text-[9px] uppercase font-bold text-neutral-400">Total Price</span>
+          <span className="text-sm font-black text-[#080808]">
+            {currencySymbol}{effectivePrice.toLocaleString('en-IN')}
+          </span>
+        </div>
+        <button
+          type="button"
+          disabled={effectiveStock <= 0}
+          onClick={() => handleAddToBag(false)}
+          className="flex-1 max-w-[200px] flex items-center justify-center gap-2 bg-[#080808] py-3 text-xs font-extrabold uppercase tracking-wider text-white transition hover:bg-[#0066FF] disabled:bg-neutral-300"
+        >
+          <ShoppingBag className="h-3.5 w-3.5" />
+          <span>{effectiveStock > 0 ? 'Add to Bag' : 'Sold Out'}</span>
+        </button>
+      </div>
     </div>
   );
 }

@@ -130,23 +130,23 @@ export function HeroSlider({ banners }: HeroSliderProps) {
         </div>
 
         {/* Main Content Container */}
-        <div className="relative z-10 mx-auto w-full max-w-[1440px] px-5 pb-12 pt-28 sm:px-8 md:py-16 lg:px-12">
+        <div className="relative z-10 mx-auto w-full max-w-[1440px] px-4 pb-10 pt-20 sm:px-8 sm:pb-12 sm:pt-28 md:py-16 lg:px-12">
           <div className="max-w-lg">
-            <p className="mb-3 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.38em] text-white/80">
+            <p className="mb-2 sm:mb-3 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.38em] text-white/80">
               NEW COLLECTION
             </p>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[68px] font-black uppercase leading-[0.95] tracking-tight">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-[68px] font-black uppercase leading-[0.98] sm:leading-[0.95] tracking-tight">
               {renderStyledHeading(current.heading || 'WEAR YOUR IDENTITY.')}
             </h1>
             {current.subheading && (
-              <p className="mt-4 max-w-md text-xs sm:text-sm leading-relaxed text-white/85">
+              <p className="mt-3 sm:mt-4 max-w-md text-xs sm:text-sm leading-relaxed text-white/85">
                 {current.subheading}
               </p>
             )}
-            <div className="mt-6 sm:mt-8">
+            <div className="mt-5 sm:mt-8">
               <Link
                 href={current.button_link || '/shop'}
-                className="inline-flex items-center gap-3 bg-white px-6 py-3.5 text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.14em] text-[#080808] transition hover:bg-[#007BFF] hover:text-white"
+                className="inline-flex items-center gap-3 bg-white px-5 sm:px-6 py-3 sm:py-3.5 text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.14em] text-[#080808] transition hover:bg-[#007BFF] hover:text-white"
               >
                 <span>{current.button_text || 'SHOP COLLECTION'}</span>
                 <ArrowRight className="h-3.5 w-3.5" />

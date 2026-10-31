@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { StoreProvider } from '@/components/storefront/StoreContext';
+import { PreloaderIntro } from '@/components/storefront/PreloaderIntro';
 import { getWebsiteSettings } from '@/lib/cms';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -37,8 +38,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        {/* Instant pre-paint check: guarantees 0ms flash of website before loader on return visits */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(sessionStorage.getItem('adyora_intro_seen')){document.documentElement.classList.add('intro-already-seen');}}catch(e){}`,
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-white font-sans text-[#080808] antialiased">
-        <StoreProvider>{children}</StoreProvider>
+        <StoreProvider>
+          <PreloaderIntro />
+          {children}
+        </StoreProvider>
       </body>
     </html>
   );
