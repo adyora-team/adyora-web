@@ -1,0 +1,115 @@
+import React from 'react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { StorefrontShell } from '@/components/storefront/StorefrontShell';
+import { ProductDetailClient } from '@/components/storefront/ProductDetailClient';
+import { ProductGridSection } from '@/components/storefront/ProductGridSection';
+import {
+  getProductBySlug,
+  getPublishedProducts,
+  getWebsiteSettings,
+} from '@/lib/cms';
+
+interface ProductPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: ProductPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
+  if (!product) {
+    return { title: 'Product Not Found' };
+  }
+  return {
+    title: product.seo_title || product.name,
+    description:
+      product.seo_description ||
+      product.description?.slice(0, 160) ||
+      `Shop ${product.name} at ADYORA.`,
+    openGraph: {
+      title: product.seo_title || product.name,
+      description: product.seo_description || product.description?.slice(0, 160),
+      images: product.product_images?.[0]?.image_url
+        ? [product.product_images[0].image_url]
+        : undefined,
+    },
+  };
+}
+
+export default async function ProductDetailPage({ params }: ProductPageProps) {
+  const { slug } = await params;
+  const [settings, product] = await Promise.all([
+    getWebsiteSettings(),
+    getProductBySlug(slug),
+  ]);
+
+  if (!product) {
+    notFound();
+  }
+
+  const relatedRes = await getPublishedProducts({
+    categoryId: product.category_id || undefined,
+    pageSize: 6,
+  });
+
+  const relatedProducts = relatedRes.products
+    .filter((p) => p.id !== product.id)
+    .slice(0, 5);
+
+  const currencySymbol = settings.currency_symbol || '₹';
+
+  return (
+    <StorefrontShell>
+      <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 md:py-12">
+        {/* Breadcrumb */}
+        <div className="mb-6 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+          <Link href="/" className="hover:text-[#080808]">
+            Home
+          </Link>
+          <span>/</span>
+          {product.category ? (
+            <>
+              <Link
+                href={`/categories/${product.category.slug}`}
+                className="hover:text-[#080808]"
+              >
+                {product.category.name}
+              </Link>
+              <span>/</span>
+            </>
+          ) : (
+            <>
+              <Link href="/shop" className="hover:text-[#080808]">
+                Shop
+              </Link>
+              <span>/</span>
+            </>
+          )}
+          <span className="truncate text-[#080808]">{product.name}</span>
+        </div>
+
+        <ProductDetailClient
+          product={product}
+          currencySymbol={currencySymbol}
+        />
+      </div>
+
+      {relatedProducts.length > 0 && (
+        <ProductGridSection
+          title="YOU MAY ALSO LIKE"
+          products={relatedProducts}
+          viewAllHref={
+            product.category
+              ? `/categories/${product.category.slug}`
+              : '/shop'
+          }
+          currencySymbol={currencySymbol}
+        />
+      )}
+    </StorefrontShell>
+  );
+}
+
