@@ -169,10 +169,24 @@ export function Footer({ footer, categories }: FooterProps) {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row">
-          <p className="text-[11px] text-neutral-400">
-            {footer.copyright_text || `© ${new Date().getFullYear()} ADYORA. All rights reserved.`}
-          </p>
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row text-[11px] text-neutral-400">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
+            <p>
+              {footer.copyright_text || `© ${new Date().getFullYear()} ADYORA. All rights reserved.`}
+            </p>
+            <span className="hidden sm:inline text-neutral-600">|</span>
+            <p>
+              Crafted by{' '}
+              <a
+                href="https://ekodrix.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-white hover:text-[#0066FF] transition-colors underline decoration-white/20 underline-offset-4 hover:decoration-[#0066FF]"
+              >
+                Ekodrix
+              </a>
+            </p>
+          </div>
 
           {Array.isArray(footer.payment_method_icons) &&
             footer.payment_method_icons.length > 0 && (
