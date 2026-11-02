@@ -440,6 +440,8 @@ export default function AdminProductsPage() {
     );
     if (descBlockMatch?.[1]) {
       const candidate = descBlockMatch[1]
+        .replace(/^(\s*\*+\s*)+/g, '')
+        .replace(/(\s*\*+\s*)+$/g, '')
         .replace(/\*\*Details:\*\*/gi, 'Details:')
         .trim();
       if (!/^Details:\s*[-•*]?\s*$/i.test(candidate)) {
