@@ -22,6 +22,8 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
+          '"Poppins"',
+          '"Inter"',
           '-apple-system',
           'BlinkMacSystemFont',
           '"SF Pro Text"',
@@ -36,6 +38,8 @@ const config: Config = {
           'sans-serif',
         ],
         display: [
+          '"Poppins"',
+          '"Inter"',
           '-apple-system',
           'BlinkMacSystemFont',
           '"SF Pro Display"',

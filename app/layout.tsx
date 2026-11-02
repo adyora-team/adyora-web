@@ -37,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Instant pre-paint check: guarantees 0ms flash of website before loader on return visits and skips on /admin */}
         <script

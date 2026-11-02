@@ -24,6 +24,12 @@ import type {
   ProductVariant,
 } from '@/types/database';
 import { getOptimizedCloudinaryUrl } from '@/lib/cloudinary';
+import {
+  DEFAULT_PDP_CONFIG,
+  extractPdpConfig,
+  serializeDescriptionWithPdpConfig,
+  type ProductPdpConfig,
+} from '@/lib/pdp-config';
 
 const PRODUCT_COPY_PASTE_TEMPLATE = `PRODUCT NAME:
 ADYORA Beige Linen Blend Shirt
@@ -144,6 +150,7 @@ interface EditableProductState {
   slug: string;
   sku: string;
   description: string;
+  pdpConfig: ProductPdpConfig;
   category_id: string;
   selling_price: number;
   original_price: string;
@@ -170,6 +177,7 @@ const DEFAULT_EDITABLE_PRODUCT: EditableProductState = {
   slug: '',
   sku: '',
   description: '',
+  pdpConfig: { ...DEFAULT_PDP_CONFIG },
   category_id: '',
   selling_price: 0,
   original_price: '',
@@ -290,12 +298,20 @@ export default function AdminProductsPage() {
       (a, b) => a.display_order - b.display_order
     );
 
+    const { cleanDescription, pdpConfig } = extractPdpConfig(prod.description);
+    const cleanedColours = Array.isArray(prod.colours)
+      ? prod.colours.filter(
+          (c) => c?.name && !/^[*•\-—\s]+$/.test(c.name.trim())
+        )
+      : [];
+
     setEditing({
       id: prod.id,
       name: prod.name,
       slug: prod.slug,
       sku: prod.sku,
-      description: prod.description || '',
+      description: cleanDescription,
+      pdpConfig,
       category_id: prod.category_id || '',
       selling_price: Number(prod.selling_price),
       original_price:
@@ -303,10 +319,7 @@ export default function AdminProductsPage() {
       cost_price: Number(prod.cost_price || 0),
       stock_quantity: Number(prod.stock_quantity),
       sizesText: (prod.sizes || []).join(', '),
-      colours:
-        Array.isArray(prod.colours) && prod.colours.length > 0
-          ? prod.colours
-          : [],
+      colours: cleanedColours,
       is_published: prod.is_published,
       is_featured: prod.is_featured,
       is_new_arrival: prod.is_new_arrival,
@@ -410,7 +423,7 @@ export default function AdminProductsPage() {
           .replace(/[\s—–\-:]+$/, '')
           .trim();
 
-        if (colourName) {
+        if (colourName && !/^[*•\-—\s]+$/.test(colourName)) {
           parsedColours.push({ name: colourName, hex });
         }
       }
@@ -651,11 +664,20 @@ export default function AdminProductsPage() {
         .map((s) => s.trim())
         .filter(Boolean);
 
+      const cleanColoursToSave = editing.colours.filter(
+        (c) => c?.name && !/^[*•\-—\s]+$/.test(c.name.trim())
+      );
+
+      const serializedDescription = serializeDescriptionWithPdpConfig(
+        editing.description.trim(),
+        editing.pdpConfig
+      );
+
       const productPayload = {
         name: editing.name.trim(),
         slug,
         sku: editing.sku.trim(),
-        description: editing.description.trim(),
+        description: serializedDescription,
         category_id: editing.category_id || null,
         selling_price: Number(editing.selling_price) || 0,
         original_price: editing.original_price
@@ -664,7 +686,7 @@ export default function AdminProductsPage() {
         cost_price: Number(editing.cost_price) || 0,
         stock_quantity: Number(editing.stock_quantity) || 0,
         sizes: sizesArray,
-        colours: editing.colours,
+        colours: cleanColoursToSave,
         is_published: editing.is_published,
         is_featured: editing.is_featured,
         is_new_arrival: editing.is_new_arrival,
@@ -1270,6 +1292,502 @@ export default function AdminProductsPage() {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* ============================================================== */}
+          {/* PRODUCT DETAIL PAGE (PDP) DISPLAY & OFFER CONTROLS             */}
+          {/* Active / Disable toggles + editable values for each widget     */}
+          {/* ============================================================== */}
+          <div className="border-t border-[#E5E5E5] pt-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wider text-[#080808]">
+                  Product Detail Page (PDP) Display & Offer Controls
+                </h3>
+                <p className="text-[11px] text-neutral-500">
+                  Enable or disable Size Chart, Promo Offers (10% OFF), Online vs. COD Price comparison, Trust Badges, and Accordions for this product.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* 1. Size Chart / Size Guide Control */}
+              <div className="border border-[#E5E5E5] bg-[#FAFAFA] p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#080808]">
+                      Size Chart / Size Guide
+                    </p>
+                    <p className="text-[11px] text-neutral-500">
+                      Show &ldquo;Size Guide&rdquo; button & measurement chart modal on product page
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditing({
+                        ...editing,
+                        pdpConfig: {
+                          ...editing.pdpConfig,
+                          showSizeGuide: !editing.pdpConfig.showSizeGuide,
+                        },
+                      })
+                    }
+                    className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition ${
+                      editing.pdpConfig.showSizeGuide
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-neutral-200 text-neutral-600'
+                    }`}
+                  >
+                    {editing.pdpConfig.showSizeGuide ? 'Active' : 'Disabled'}
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. "NEW" Image Badge + Pincode Checker Controls */}
+              <div className="border border-[#E5E5E5] bg-[#FAFAFA] p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#080808]">
+                      &ldquo;NEW&rdquo; Image Pill Badge
+                    </p>
+                    <p className="text-[11px] text-neutral-500">
+                      Show green &ldquo;NEW&rdquo; badge on main product image
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditing({
+                        ...editing,
+                        pdpConfig: {
+                          ...editing.pdpConfig,
+                          showNewBadge: !editing.pdpConfig.showNewBadge,
+                        },
+                      })
+                    }
+                    className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition ${
+                      editing.pdpConfig.showNewBadge
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-neutral-200 text-neutral-600'
+                    }`}
+                  >
+                    {editing.pdpConfig.showNewBadge ? 'Active' : 'Disabled'}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-[#E5E5E5] pt-2.5">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#080808]">
+                      Delivery Pincode Checker
+                    </p>
+                    <p className="text-[11px] text-neutral-500">
+                      Show &ldquo;Check for Delivery Details&rdquo; pincode box
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditing({
+                        ...editing,
+                        pdpConfig: {
+                          ...editing.pdpConfig,
+                          showPincodeChecker:
+                            !editing.pdpConfig.showPincodeChecker,
+                        },
+                      })
+                    }
+                    className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition ${
+                      editing.pdpConfig.showPincodeChecker
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-neutral-200 text-neutral-600'
+                    }`}
+                  >
+                    {editing.pdpConfig.showPincodeChecker
+                      ? 'Active'
+                      : 'Disabled'}
+                  </button>
+                </div>
+              </div>
+
+              {/* 3. Promo Offer Banner (BUY MORE. SAVE MORE. / 10% OFF) */}
+              <div className="border border-[#E5E5E5] bg-[#FAFAFA] p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#080808]">
+                      Promo Offer Box (e.g. 10% OFF Banner)
+                    </p>
+                    <p className="text-[11px] text-neutral-500">
+                      Show &ldquo;BUY MORE. SAVE MORE.&rdquo; discount banner card
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditing({
+                        ...editing,
+                        pdpConfig: {
+                          ...editing.pdpConfig,
+                          showPromoBanner: !editing.pdpConfig.showPromoBanner,
+                        },
+                      })
+                    }
+                    className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition ${
+                      editing.pdpConfig.showPromoBanner
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-neutral-200 text-neutral-600'
+                    }`}
+                  >
+                    {editing.pdpConfig.showPromoBanner ? 'Active' : 'Disabled'}
+                  </button>
+                </div>
+
+                {editing.pdpConfig.showPromoBanner && (
+                  <div className="space-y-2 border-t border-[#E5E5E5] pt-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-neutral-500">
+                          Promo Heading
+                        </label>
+                        <input
+                          type="text"
+                          value={editing.pdpConfig.promoTitle}
+                          onChange={(e) =>
+                            setEditing({
+                              ...editing,
+                              pdpConfig: {
+                                ...editing.pdpConfig,
+                                promoTitle: e.target.value,
+                              },
+                            })
+                          }
+                          className="mt-1 w-full border border-[#E5E5E5] bg-white px-2.5 py-1.5 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-neutral-500">
+                          Badge Text (e.g. 10% OFF)
+                        </label>
+                        <input
+                          type="text"
+                          value={editing.pdpConfig.promoBadge}
+                          onChange={(e) =>
+                            setEditing({
+                              ...editing,
+                              pdpConfig: {
+                                ...editing.pdpConfig,
+                                promoBadge: e.target.value,
+                              },
+                            })
+                          }
+                          className="mt-1 w-full border border-[#E5E5E5] bg-white px-2.5 py-1.5 text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-neutral-500">
+                        Promo Description
+                      </label>
+                      <input
+                        type="text"
+                        value={editing.pdpConfig.promoText}
+                        onChange={(e) =>
+                          setEditing({
+                            ...editing,
+                            pdpConfig: {
+                              ...editing.pdpConfig,
+                              promoText: e.target.value,
+                            },
+                          })
+                        }
+                        className="mt-1 w-full border border-[#E5E5E5] bg-white px-2.5 py-1.5 text-xs"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 4. Payment Comparison & COD Price Box */}
+              <div className="border border-[#E5E5E5] bg-[#FAFAFA] p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#080808]">
+                      Online vs. COD Price Box (&ldquo;Choose how you pay&rdquo;)
+                    </p>
+                    <p className="text-[11px] text-neutral-500">
+                      Show Online UPI/Card savings vs. Cash on Delivery fee box
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditing({
+                        ...editing,
+                        pdpConfig: {
+                          ...editing.pdpConfig,
+                          showPaymentComparison:
+                            !editing.pdpConfig.showPaymentComparison,
+                        },
+                      })
+                    }
+                    className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition ${
+                      editing.pdpConfig.showPaymentComparison
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-neutral-200 text-neutral-600'
+                    }`}
+                  >
+                    {editing.pdpConfig.showPaymentComparison
+                      ? 'Active'
+                      : 'Disabled'}
+                  </button>
+                </div>
+
+                {editing.pdpConfig.showPaymentComparison && (
+                  <div className="grid grid-cols-3 gap-2 border-t border-[#E5E5E5] pt-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-neutral-500">
+                        Online Save (₹)
+                      </label>
+                      <input
+                        type="number"
+                        value={editing.pdpConfig.onlineSavingsAmount}
+                        onChange={(e) =>
+                          setEditing({
+                            ...editing,
+                            pdpConfig: {
+                              ...editing.pdpConfig,
+                              onlineSavingsAmount: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="mt-1 w-full border border-[#E5E5E5] bg-white px-2.5 py-1.5 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-neutral-500">
+                        COD Fee Min (₹)
+                      </label>
+                      <input
+                        type="number"
+                        value={editing.pdpConfig.codFeeMin}
+                        onChange={(e) =>
+                          setEditing({
+                            ...editing,
+                            pdpConfig: {
+                              ...editing.pdpConfig,
+                              codFeeMin: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="mt-1 w-full border border-[#E5E5E5] bg-white px-2.5 py-1.5 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-neutral-500">
+                        COD Fee Max (₹)
+                      </label>
+                      <input
+                        type="number"
+                        value={editing.pdpConfig.codFeeMax}
+                        onChange={(e) =>
+                          setEditing({
+                            ...editing,
+                            pdpConfig: {
+                              ...editing.pdpConfig,
+                              codFeeMax: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="mt-1 w-full border border-[#E5E5E5] bg-white px-2.5 py-1.5 text-xs"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 5. Trust Badges Strip (COD, Free Shipping, Easy Returns) */}
+              <div className="border border-[#E5E5E5] bg-[#FAFAFA] p-4 space-y-3 md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#080808]">
+                      Trust Badges Strip (COD • Free Shipping • Easy Returns)
+                    </p>
+                    <p className="text-[11px] text-neutral-500">
+                      Toggle the 3-icon guarantee strip or customize which badges appear
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditing({
+                        ...editing,
+                        pdpConfig: {
+                          ...editing.pdpConfig,
+                          showTrustBadges: !editing.pdpConfig.showTrustBadges,
+                        },
+                      })
+                    }
+                    className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition ${
+                      editing.pdpConfig.showTrustBadges
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-neutral-200 text-neutral-600'
+                    }`}
+                  >
+                    {editing.pdpConfig.showTrustBadges ? 'Active' : 'Disabled'}
+                  </button>
+                </div>
+
+                {editing.pdpConfig.showTrustBadges && (
+                  <div className="flex flex-wrap gap-6 border-t border-[#E5E5E5] pt-3 text-xs font-bold uppercase">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={editing.pdpConfig.showCodBadge}
+                        onChange={(e) =>
+                          setEditing({
+                            ...editing,
+                            pdpConfig: {
+                              ...editing.pdpConfig,
+                              showCodBadge: e.target.checked,
+                            },
+                          })
+                        }
+                        className="h-4 w-4 accent-[#080808]"
+                      />
+                      <span>Cash on Delivery</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={editing.pdpConfig.showFreeShippingBadge}
+                        onChange={(e) =>
+                          setEditing({
+                            ...editing,
+                            pdpConfig: {
+                              ...editing.pdpConfig,
+                              showFreeShippingBadge: e.target.checked,
+                            },
+                          })
+                        }
+                        className="h-4 w-4 accent-[#080808]"
+                      />
+                      <span>Free Shipping</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={editing.pdpConfig.showEasyReturnsBadge}
+                        onChange={(e) =>
+                          setEditing({
+                            ...editing,
+                            pdpConfig: {
+                              ...editing.pdpConfig,
+                              showEasyReturnsBadge: e.target.checked,
+                            },
+                          })
+                        }
+                        className="h-4 w-4 accent-[#080808]"
+                      />
+                      <span>Easy Returns</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              {/* 6. Fabric & Silhouette Accordion */}
+              <div className="border border-[#E5E5E5] bg-[#FAFAFA] p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#080808]">
+                    Fabric & Silhouette Accordion
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditing({
+                        ...editing,
+                        pdpConfig: {
+                          ...editing.pdpConfig,
+                          showFabricAccordion:
+                            !editing.pdpConfig.showFabricAccordion,
+                        },
+                      })
+                    }
+                    className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition ${
+                      editing.pdpConfig.showFabricAccordion
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-neutral-200 text-neutral-600'
+                    }`}
+                  >
+                    {editing.pdpConfig.showFabricAccordion
+                      ? 'Active'
+                      : 'Disabled'}
+                  </button>
+                </div>
+                {editing.pdpConfig.showFabricAccordion && (
+                  <textarea
+                    rows={3}
+                    value={editing.pdpConfig.fabricSpecsText}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        pdpConfig: {
+                          ...editing.pdpConfig,
+                          fabricSpecsText: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-full border border-[#E5E5E5] bg-white p-2 text-xs"
+                  />
+                )}
+              </div>
+
+              {/* 7. Shipping & Returns Accordion */}
+              <div className="border border-[#E5E5E5] bg-[#FAFAFA] p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#080808]">
+                    Shipping & Returns Accordion
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditing({
+                        ...editing,
+                        pdpConfig: {
+                          ...editing.pdpConfig,
+                          showShippingAccordion:
+                            !editing.pdpConfig.showShippingAccordion,
+                        },
+                      })
+                    }
+                    className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition ${
+                      editing.pdpConfig.showShippingAccordion
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-neutral-200 text-neutral-600'
+                    }`}
+                  >
+                    {editing.pdpConfig.showShippingAccordion
+                      ? 'Active'
+                      : 'Disabled'}
+                  </button>
+                </div>
+                {editing.pdpConfig.showShippingAccordion && (
+                  <textarea
+                    rows={3}
+                    value={editing.pdpConfig.shippingSpecsText}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        pdpConfig: {
+                          ...editing.pdpConfig,
+                          shippingSpecsText: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-full border border-[#E5E5E5] bg-white p-2 text-xs"
+                  />
+                )}
+              </div>
+            </div>
           </div>
 
           {/* SEO Fields */}

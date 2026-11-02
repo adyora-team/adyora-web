@@ -56,11 +56,15 @@ export function Header({ settings, navigationItems, categories }: HeaderProps) {
     router.push(`/shop?q=${encodeURIComponent(searchQuery.trim())}`);
   };
 
+  const hasAnnouncement = Boolean(
+    settings.announcement_visible && settings.announcement_text
+  );
+
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-[#080808] text-white border-b border-white/10">
+      <header className="fixed top-0 left-0 right-0 z-40 w-full bg-[#080808]/95 backdrop-blur-md text-white border-b border-white/10 shadow-sm">
         {/* 1. Slim Announcement Bar matching reference */}
-        {settings.announcement_visible && settings.announcement_text && (
+        {hasAnnouncement && (
           <div
             style={{
               backgroundColor: settings.announcement_bg_color || '#080808',
@@ -208,6 +212,12 @@ export function Header({ settings, navigationItems, categories }: HeaderProps) {
           </div>
         )}
       </header>
+
+      {/* Fixed Header Spacer so content starts cleanly below the fixed navbar */}
+      <div
+        className={hasAnnouncement ? 'h-[85px] md:h-[93px]' : 'h-14 md:h-16'}
+        aria-hidden="true"
+      />
 
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (

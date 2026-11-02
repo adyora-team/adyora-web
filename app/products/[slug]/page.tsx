@@ -10,6 +10,7 @@ import {
   getPublishedProducts,
   getWebsiteSettings,
 } from '@/lib/cms';
+import { extractPdpConfig } from '@/lib/pdp-config';
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -23,15 +24,16 @@ export async function generateMetadata({
   if (!product) {
     return { title: 'Product Not Found' };
   }
+  const { cleanDescription } = extractPdpConfig(product.description);
   return {
     title: product.seo_title || product.name,
     description:
       product.seo_description ||
-      product.description?.slice(0, 160) ||
+      cleanDescription?.slice(0, 160) ||
       `Shop ${product.name} at ADYORA.`,
     openGraph: {
       title: product.seo_title || product.name,
-      description: product.seo_description || product.description?.slice(0, 160),
+      description: product.seo_description || cleanDescription?.slice(0, 160),
       images: product.product_images?.[0]?.image_url
         ? [product.product_images[0].image_url]
         : undefined,
@@ -63,10 +65,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   return (
     <StorefrontShell>
-      <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 md:py-12">
-        {/* Breadcrumb */}
-        <div className="mb-6 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
-          <Link href="/" className="hover:text-[#080808]">
+      <div className="mx-auto max-w-[1280px] px-4 py-5 sm:px-8 lg:px-10 sm:py-8">
+        {/* Minimal Breadcrumb */}
+        <div className="mb-4 flex items-center gap-2 text-xs font-normal text-neutral-400">
+          <Link href="/" className="hover:text-[#111111] transition-colors">
             Home
           </Link>
           <span>/</span>
@@ -74,7 +76,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             <>
               <Link
                 href={`/categories/${product.category.slug}`}
-                className="hover:text-[#080808]"
+                className="hover:text-[#111111] transition-colors"
               >
                 {product.category.name}
               </Link>
@@ -82,13 +84,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             </>
           ) : (
             <>
-              <Link href="/shop" className="hover:text-[#080808]">
+              <Link href="/shop" className="hover:text-[#111111] transition-colors">
                 Shop
               </Link>
               <span>/</span>
             </>
           )}
-          <span className="truncate text-[#080808]">{product.name}</span>
+          <span className="truncate text-neutral-600">{product.name}</span>
         </div>
 
         <ProductDetailClient
