@@ -16,10 +16,21 @@ export function ProductCard({ product, currencySymbol = '₹' }: ProductCardProp
   const { addToCart, toggleWishlist, isWishlisted } = useStore();
   const wishlisted = isWishlisted(product.id);
 
-  const primaryImage = product.product_images?.[0];
-  const imageUrl = primaryImage?.image_url
+  const images = (product.product_images || []).sort(
+    (a, b) => a.display_order - b.display_order
+  );
+  const primaryImage = images[0];
+  const secondaryImage = images[1];
+
+  const primaryImageUrl = primaryImage?.image_url
     ? getOptimizedCloudinaryUrl(primaryImage.image_url, {
-        width: 400,
+        width: 800,
+      })
+    : '';
+
+  const secondaryImageUrl = secondaryImage?.image_url
+    ? getOptimizedCloudinaryUrl(secondaryImage.image_url, {
+        width: 800,
       })
     : '';
 
@@ -60,15 +71,36 @@ export function ProductCard({ product, currencySymbol = '₹' }: ProductCardProp
     <div className="group flex flex-col">
       {/* Image Container */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EFEFEF]">
-        <Link href={`/products/${product.slug}`} className="block h-full w-full">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={primaryImage?.alt_text || product.name}
-              loading="lazy"
-              decoding="async"
-              className="h-full w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
-            />
+        <Link
+          href={`/products/${product.slug}`}
+          className="relative block h-full w-full overflow-hidden"
+        >
+          {primaryImageUrl ? (
+            <>
+              {/* Primary Image */}
+              <img
+                src={primaryImageUrl}
+                alt={primaryImage?.alt_text || product.name}
+                loading="lazy"
+                decoding="async"
+                className={`h-full w-full object-cover object-top transition-all duration-700 ease-out ${
+                  secondaryImageUrl
+                    ? 'group-hover:scale-105 group-hover:opacity-0'
+                    : 'group-hover:scale-105'
+                }`}
+              />
+
+              {/* Secondary Image: Smooth crossfade transition on hover */}
+              {secondaryImageUrl && (
+                <img
+                  src={secondaryImageUrl}
+                  alt={secondaryImage?.alt_text || `${product.name} back view`}
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover object-top opacity-0 transition-all duration-700 ease-out group-hover:scale-105 group-hover:opacity-100"
+                />
+              )}
+            </>
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-[#F4F4F4] p-4 text-center">
               <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
