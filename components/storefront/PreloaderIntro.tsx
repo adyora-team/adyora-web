@@ -10,7 +10,10 @@ export function PreloaderIntro() {
 
   useEffect(() => {
     try {
-      if (sessionStorage.getItem('adyora_intro_seen')) {
+      if (
+        window.location.pathname.startsWith('/admin') ||
+        sessionStorage.getItem('adyora_intro_seen')
+      ) {
         setShow(false);
         return;
       }

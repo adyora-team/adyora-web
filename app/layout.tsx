@@ -39,10 +39,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Instant pre-paint check: guarantees 0ms flash of website before loader on return visits */}
+        {/* Instant pre-paint check: guarantees 0ms flash of website before loader on return visits and skips on /admin */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(sessionStorage.getItem('adyora_intro_seen')){document.documentElement.classList.add('intro-already-seen');}}catch(e){}`,
+            __html: `try{if(window.location.pathname.startsWith('/admin')||sessionStorage.getItem('adyora_intro_seen')){document.documentElement.classList.add('intro-already-seen');}}catch(e){}`,
           }}
         />
       </head>
