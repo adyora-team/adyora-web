@@ -182,7 +182,7 @@ export async function sendTransactionalEmail(
   params: SendBrevoEmailParams
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const apiKey = process.env.BREVO_API_KEY;
-  const senderEmail = process.env.BREVO_SENDER_EMAIL || 'orders@adyora.in';
+  const senderEmail = process.env.BREVO_SENDER_EMAIL || 'adyoraclothing.in@gmail.com';
   const senderName = process.env.BREVO_SENDER_NAME || 'ADYORA';
 
   const { subject, htmlContent } = renderAdyoraEmailTemplate(
