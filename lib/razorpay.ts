@@ -67,7 +67,9 @@ export function verifyRazorpayPaymentSignature(params: {
   razorpaySignature: string;
 }): boolean {
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
-  if (!keySecret) return false;
+  if (!keySecret || !params.razorpayOrderId || !params.razorpayPaymentId || !params.razorpaySignature) {
+    return false;
+  }
 
   const payload = `${params.razorpayOrderId}|${params.razorpayPaymentId}`;
   const expectedSignature = crypto
@@ -75,11 +77,15 @@ export function verifyRazorpayPaymentSignature(params: {
     .update(payload)
     .digest('hex');
 
+  const expBuf = Buffer.from(expectedSignature, 'utf8');
+  const sigBuf = Buffer.from(params.razorpaySignature, 'utf8');
+
+  if (expBuf.length !== sigBuf.length) {
+    return false;
+  }
+
   try {
-    return crypto.timingSafeEqual(
-      Buffer.from(expectedSignature, 'utf8'),
-      Buffer.from(params.razorpaySignature, 'utf8')
-    );
+    return crypto.timingSafeEqual(expBuf, sigBuf);
   } catch {
     return false;
   }
@@ -100,11 +106,15 @@ export function verifyRazorpayWebhookSignature(
     .update(rawBody)
     .digest('hex');
 
+  const expBuf = Buffer.from(expectedSignature, 'utf8');
+  const sigBuf = Buffer.from(signatureHeader, 'utf8');
+
+  if (expBuf.length !== sigBuf.length) {
+    return false;
+  }
+
   try {
-    return crypto.timingSafeEqual(
-      Buffer.from(expectedSignature, 'utf8'),
-      Buffer.from(signatureHeader, 'utf8')
-    );
+    return crypto.timingSafeEqual(expBuf, sigBuf);
   } catch {
     return false;
   }

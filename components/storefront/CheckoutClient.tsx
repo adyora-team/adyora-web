@@ -17,6 +17,30 @@ declare global {
   }
 }
 
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') return resolve(false);
+    if (window.Razorpay) return resolve(true);
+
+    const existingScript = document.querySelector<HTMLScriptElement>(
+      'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
+    );
+    if (existingScript) {
+      if (window.Razorpay) return resolve(true);
+      existingScript.addEventListener('load', () => resolve(true));
+      existingScript.addEventListener('error', () => resolve(false));
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 export function CheckoutClient({ settings }: { settings: WebsiteSettings }) {
   const { cart, cartSubtotal, clearCart } = useStore();
   const currencySymbol = settings.currency_symbol || '₹';
@@ -170,9 +194,12 @@ export function CheckoutClient({ settings }: { settings: WebsiteSettings }) {
       }
 
       if (!window.Razorpay) {
-        throw new Error(
-          'Razorpay payment gateway script did not load. Please check your connection and try again.'
-        );
+        const loaded = await loadRazorpayScript();
+        if (!loaded || !window.Razorpay) {
+          throw new Error(
+            'Razorpay payment gateway script did not load. Please check your connection and try again.'
+          );
+        }
       }
 
       const rzp = new window.Razorpay({
@@ -308,7 +335,7 @@ export function CheckoutClient({ settings }: { settings: WebsiteSettings }) {
     <>
       <Script
         src="https://checkout.razorpay.com/v1/checkout.js"
-        strategy="lazyOnload"
+        strategy="afterInteractive"
       />
       <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 md:py-12">
         <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-[#080808]">
